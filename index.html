@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Model-agnostic variable importance and selection</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Brian D. Williamson, PhD   Kaiser Permanente Washington Health Research Institute" />
+    <link href="index_files/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="index_files/tile-view-0.2.6/tile-view.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, title-slide
+
+# Model-agnostic variable importance and selection
+### Brian D. Williamson, PhD<br> <span style="font-size: 75%;"> Kaiser Permanente Washington Health Research Institute </span>
+### 28 April, 2022 <br> <a href = 'https://bdwilliamson.github.io/talks' style = 'color: white;'>https://bdwilliamson.github.io/talks</a>
+
+---
+
+
+
+
+&lt;style type="text/css"&gt;
+.remark-slide-content {
+    font-size: 20px
+    header-h2-font-size: 1.75rem;
+}
+&lt;/style&gt;
+
+## Acknowledgments
+
+The work I will present today was done in collaboration with:
+&lt;img src="img/people1.PNG" width="65%" style="display: block; margin: auto;" /&gt;
+&lt;img src="img/people2.PNG" width="65%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Variable importance: what and why
+
+**What is variable importance?**
+
+--
+
+* .blue1[Quantification of "contributions" of a variable] (or a set of variables)
+
+--
+
+  Traditionally: contribution to .blue2[predictions]
+--
+
+* Useful to distinguish between contributions of predictions...
+--
+
+  * (.blue1[extrinsic importance]) ... .blue1[by a given (possibly black-box) algorithm]
+  .small[ [e.g., Breiman, (2001)] ]
+--
+
+  * (.blue1[intrinsic importance]) ... .blue1[by best possible (i.e., oracle) algorithm]
+  .small[ [e.g., van der Laan (2006)] ]
+--
+
+* Our work focuses on .blue1[interpretable, model-agnostic intrinsic importance]
+
+--
+
+Example uses of .blue2[intrinsic] variable importance:
+* is it worth extracting text from notes in the EHR for the sake of predicting hospital readmission?
+
+--
+
+* is it worth collecting a given covariate for the sake of predicting neutralization sensitivity?
+
+
+---
+
+## Case study: ANOVA importance
+
+Data unit `\((X, Y) \sim P_0\)` with:
+* outcome `\(Y\)` 
+* covariate `\(X := (X_1, X_2, \ldots, X_p)\)`
+
+--
+
+**Goals:** 
+* .green[estimate]
+* .blue1[and do inference on]
+
+the importance of `\((X_j: j \in s)\)` in predicting `\(Y\)`
+
+--
+
+How do we typically do this in **linear regression**?
+
+---
+
+## Case study: ANOVA importance
+
+How do we typically do this in **linear regression**?
+
+* Fit a linear regression of `\(Y\)` on `\(X\)` `\(\rightarrow \color{magenta}{\hat{\mu}(X)}\)`
+--
+
+* Fit a linear regression of `\(Y\)` on `\(X_{-s}\)` `\(\rightarrow \color{magenta}{\hat{\mu}_s(X)}\)`
+--
+
+* .green[Compare the fitted values] `\([\hat{\mu}(X_i), \hat{\mu}_s(X_i)]\)`
+
+--
+
+Many ways to compare fitted values, including:
+* ANOVA decomposition
+* Difference in `\(R^2\)`
+
+---
+
+## Case study: ANOVA importance
+
+Difference in `\(R^2\)`: `$$\left[1 - \frac{n^{-1}\sum_{i=1}^n\{Y_i - \hat{\mu}(X_i)\}^2}{n^{-1}\sum_{i=1}^n\{Y_i - \overline{Y}_n\}^2}\right] - \left[1 - \frac{n^{-1}\sum_{i=1}^n\{Y_i - \hat{\mu}_s(X_i)\}^2}{n^{-1}\sum_{i=1}^n\{Y_i - \overline{Y}_n\}^2}\right]$$`
+
+--
+
+&amp;zwj;Inference:
+* Test difference
+* Valid confidence interval
+
+---
+
+## Case study: ANOVA importance
+
+Consider the .blue1[population parameter] `$$\psi_{0,s} = \frac{E_0\{\mu_0(X) - \mu_{0,s}(X)\}^2}{var_0(Y)}$$`
+
+* `\(\mu_0(x) := E_0(Y \mid X = x)\)` .blue1[(true conditional mean)]
+* `\(\mu_{0,s}(x) := E_0(Y \mid X_{-s} = x_{-s})\)` 
+
+  [for a vector `\(z\)`, `\(z_{-s}\)` represents `\((z_j: j \notin s)\)`]
+
+--
+
+* .blue2[nonparametric extension] of linear regression-based ANOVA parameter
+
+--
+
+* Can be expressed as a `\(\color{magenta}{\text{difference in population } R^2}\)` values, since `$$\color{magenta}{\psi_{0,s} = \left[1 - \frac{E_0\{Y - \mu_0(X)\}^2}{var_0(Y)}\right] - \left[1 - \frac{E_0\{Y - \mu_{0,s}(X)\}^2}{var_0(Y)}\right]}$$`
+
+---
+
+## Case study: ANOVA importance
+
+How should we make inference on `\(\psi_{0,s}\)`?
+--
+
+1. construct estimators `\(\mu_n\)`, `\(\mu_{n,s}\)` of `\(\mu_0\)` and `\(\mu_{0,s}\)` (e.g., with machine learning)
+--
+
+2. plug in: `$$\psi_{n,s} := \frac{\frac{1}{n}\sum_{i=1}^n \{\mu_n(X_i) - \mu_{n,s}(X_i)\}^2}{\frac{1}{n}\sum_{i=1}^n (Y_i - \overline{Y}_n)^2}$$`
+--
+
+  but this estimator has .red[asymptotic bias]
+--
+
+3. using influence function-based debiasing [e.g., Pfanzagl (1982)], we get estimator `$$\color{magenta}{\psi_{n,s}^* := \left[1 - \frac{\frac{1}{n}\sum_{i=1}^n\{Y_i - \mu_n(X_i)\}^2}{\frac{1}{n}\sum_{i=1}^n (Y_i - \overline{Y}_n)^2}\right] - \left[1 - \frac{\frac{1}{n}\sum_{i=1}^n\{Y_i - \mu_{n,s}(X_i)\}^2}{\frac{1}{n}\sum_{i=1}^n (Y_i - \overline{Y}_n)^2}\right]}$$`
+
+---
+
+## Case study: ANOVA importance
+
+`$$\color{magenta}{\psi_{n,s}^* := \left[1 - \frac{\frac{1}{n}\sum_{i=1}^n\{Y_i - \mu_n(X_i)\}^2}{\frac{1}{n}\sum_{i=1}^n (Y_i - \overline{Y}_n)^2}\right] - \left[1 - \frac{\frac{1}{n}\sum_{i=1}^n\{Y_i - \mu_{n,s}(X_i)\}^2}{\frac{1}{n}\sum_{i=1}^n (Y_i - \overline{Y}_n)^2}\right]}$$`
+
+Key observations:
+* `\(\psi_{n,s}^* =\)` plug-in estimator of `\(\psi_{0,s}\)` based on difference-in- `\(R^2\)` representation
+--
+
+* .blue1[No need to debias] the difference-in- `\(R^2\)` estimator!
+--
+
+* Why does this happen? 
+
+  .blue2[Estimation of] `\(\mu_{0}\)` .blue2[and] `\(\mu_{0,s}\)` .blue2[yields only second-order terms, so estimator behaves as if they are **known**]
+  
+--
+
+Under regularity conditions, `\(\psi_{n,s}^*\)` is consistent and nonparametric efficient.
+
+--
+
+In particular, `\(\sqrt{n}(\psi_{n,s}^* - \psi_{0,s})\)` has a mean-zero normal limit with estimable variance.
+
+[Details in Williamson et al. (2020)]
+---
+
+## Preparing for AMP
+
+&lt;img src="img/amp.png" width="200px" style="display: block; margin: auto;" /&gt;
+
+* 611 HIV-1 pseudoviruses
+* Outcome: neutralization sensitivity/resistance to antibody
+
+--
+
+**Goal:** pre-screen features for inclusion in secondary analysis
+* 800 individual features, 13 groups of interest
+
+--
+
+&amp;zwj;Procedure: 
+1. Estimate `\(\mu_n\)`, `\(\mu_{n,s}\)` using Super Learner [van der Laan et al. (2007)]
+2. Estimate and do inference on variable importance `\(\psi_{n,s}^*\)` 
+
+.small[ [Details in Magaret et al. (2019) and Williamson et al. (2021b)] ]
+
+---
+
+## Preparing for AMP: R-squared
+
+&lt;img src="img/vim_ic50.censored_pres_r2_conditional_simple.png" width="5249" height="480px" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Generalization to arbitrary measures
+
+ANOVA example suggests a natural generalization:
+--
+
+* Choose a relevant measure of .blue1[predictiveness] for the task at hand
+
+--
+
+  * `\(V(f, P) =\)` .blue1[predictiveness] of function `\(f\)` under sampling from `\(P\)`
+  * `\(\mathcal{F} =\)` rich class of candidate prediction functions
+  * `\(\mathcal{F}_{-s} =\)` {all functions in `\(\mathcal{F}\)` that ignore components with index in `\(s\)`} `\(\subset \mathcal{F}\)`
+  
+--
+
+* Define the oracle prediction functions
+
+  `\(f_0:=\)` maximizer of `\(V(f, P_0)\)` over `\(\mathcal{F}\)` &amp; `\(f_{0,s}:=\)` maximizer of `\(V(f, P_0)\)` over `\(\mathcal{F}_{-s}\)`
+
+--
+
+Define the importance of `\((X_j: j \in s)\)` relative to `\(X\)` as `$$\color{magenta}{\psi_{0,s} := V(f_0, P_0) - V(f_{0,s}, P_0) \geq 0}$$`
+
+---
+
+## Generalization to arbitrary measures
+
+Some examples of predictiveness measures:
+
+(arbitrary outcomes)
+
+&amp;zwj; `\(R^2\)`: `\(V(f, P) = 1 - E_P\{Y - f(X)\}^2 / var_P(Y)\)`
+
+--
+
+(binary outcomes)
+
+Classification accuracy: `\(V(f, P) = P\{Y = f(X)\}\)`
+
+&amp;zwj;AUC: `\(V(f, P) = P\{f(X_1) &lt; f(X_2) \mid Y_1 = 0, Y_2 = 1\}\)` for `\((X_1, Y_1) \perp (X_2, Y_2)\)`
+
+Pseudo- `\(R^2\)` : `\(1 - \frac{E_P[Y \log f(X) - (1 - Y)\log \{1 - f(X)\}]}{P(Y = 1)\log P(Y = 1) + P(Y = 0)\log P(Y = 0)}\)`
+
+---
+
+## Generalization to arbitrary measures
+
+How should we make inference on `\(\psi_{0,s}\)`?
+--
+
+1. construct estimators `\(f_n\)`, `\(f_{n,s}\)` of `\(f_0\)` and `\(f_{0,s}\)` (e.g., with machine learning)
+--
+
+2. plug in: `$$\psi_{n,s}^* := V(f_n, P_n) - V(f_{n,s}, P_n)$$`
+  
+  where `\(P_n\)` is the empirical distribution based on the available data
+--
+
+3. Inference can be carried out using influence functions.
+--
+ Why?
+
+We can write `\(V(f_n, P_n) - V(f_{n,s}, P_n) \approx \color{green}{V(f_0, P_n) - V(f_0, P_0)} + \color{blue}{V(f_n, P_0) - V(f_0, P_0)}\)`
+--
+
+* the `\(\color{green}{\text{green term}}\)` can be studied using the functional delta method
+* the `\(\color{blue}{\text{blue term}}\)` is second-order because `\(f_0\)` maximizes `\(V\)` over `\(\mathcal{F}\)`
+
+--
+
+In other words: `\(f_0\)` and `\(f_{0,s}\)` **can be treated as known** in studying behavior of `\(\psi_{n,s}^*\)`!
+
+[Details in Williamson et al. (2021b)]
+
+---
+
+## Preparing for AMP: the full picture
+
+&lt;img src="img/vim_ic50.censored_pres_r2_acc_auc_conditional_simple.png" width="5249" height="480px" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Preparing for AMP: the full picture
+
+&amp;zwj;Implications:
+--
+
+* All sites in the VRC01 binding footprint, CD4 binding sites appear important
+--
+
+* Results may differ based on chosen measure
+
+--
+
+Other applications:
+  * combination regimens against HIV-1 [Williamson et al., 2021a]
+  * COVID-19 prevention (forthcoming)
+
+---
+
+## Extension: correlated features
+
+So far: importance of `\((X_j: j \in s)\)` relative to `\(X\)`
+
+--
+
+`\(\color{red}{\text{Potential issue}}\)`: correlated features
+
+&amp;zwj;Example: two highly correlated features, age and foot size; predicting toddlers' reading ability
+
+--
+
+* True importance of age = 0 (since foot size is in the model)
+* True importance of foot size = 0 (since age is in the model)
+
+--
+
+&amp;zwj;Idea: average contribution of a feature over all subsets!
+
+--
+
+True importance of age = average(.blue1[increase in predictiveness from adding age to foot size] &amp; .green[increase in predictiveness from using age over nothing])
+
+---
+
+## Extension: correlated features
+
+Specifically, for each `\(j \in \{1, \ldots, p\}\)`, we define the SPVIM
+
+`$$\psi_{0,j} := \sum_{s \in \{1, \ldots, p\}\setminus \{j\}} \binom{p - 1}{\lvert s \rvert}^{-1}\frac{1}{p}\{V(f_{0,s\cup j}, P_0) - V(f_{0,s},P_0)\}$$` 
+
+.small[ (SPVIM = Shapley Population Variable Importance Measure) ]
+
+--
+
+Estimation procedure: based on .blue1[sampling a fraction] `\(c\)` of all possible subsets
+
+--
+
+.green[Inference] can be carried out using influence functions, as before
+
+.small[ Details in Williamson and Feng (2020) ]
+
+---
+
+## Flexible variable selection
+
+&amp;zwj;Goal: develop a biomarker panel for classifying pancreatic cysts
+
+--
+
+Complicating factors:
+* .red[missing data] due to limited specimen volumes
+* desire for .green[parsimonious] set of biomarkers
+
+--
+
+&amp;zwj;Solution: variable selection
+
+--
+
+Useful to distinguish between variable selection...
+
+--
+
+* ... .blue1[to increase prediction performance] .small[ (e.g., Tibshirani (1996)) ]
+* ... .blue2[to find scientifically relevant variables] .small[ (e.g., Barber and Candes (2015)) ]
+
+--
+
+Our work focuses on the latter, in contexts where
+* a (generalized) linear model may be .red[misspecified]
+* there may be complex missing data
+
+--
+
+&amp;zwj;Idea: use .green[variable importance]!
+
+---
+
+## Flexible variable selection
+
+The SPVIM
+
+`$$\psi_{0,j} := \sum_{s \in \{1, \ldots, p\}\setminus \{j\}} \binom{p - 1}{\lvert s \rvert}^{-1}\frac{1}{p}\{V(f_{0,s\cup j}, P_0) - V(f_{0,s},P_0)\}$$` 
+
+suggests a natural dichotomy:
+
+--
+
+* if `\(\psi_{0,j} &gt; 0\)`, `\(X_j\)` has .blue1[some] utility when added to .blue1[a subset]
+
+--
+
+* if `\(\psi_{0,j} = 0\)`, `\(X_j\)` has .red[no] utility when added to .red[any subset]
+
+--
+
+So we can use .blue1[intrinsic importance] to do flexible variable selection!
+
+---
+
+## Flexible variable selection
+
+How can we select variables based on `\(\psi_{0,j}\)`?
+
+--
+
+1. Estimate `\(\psi_0 = \{\psi_{0,j}\}_{j=1}^p\)`, obtain p-values `\(p_{n,j}\)` for each test of zero importance
+
+--
+
+3. Compute .blue1[adjusted] p-values `\(\tilde{p}_{n,j}\)` to control the .blue2[family-wise error rate] (FWER)
+
+--
+
+4. Set `\(S_n(\alpha) = \{j \in \{1, \ldots, p\}: \tilde{p}_{n,j} &lt; \alpha\}\)`
+
+--
+
+5. For `\(k \in \{0, \ldots, p - \lvert S_n(\alpha)\rvert\}\)`, determine .blue1[augmentation set] 
+`$$A_n(k, \alpha) = \{s \subseteq S_n^c(\alpha): \tilde{p}_{n,\ell} \leq \tilde{p}_{n,(k)} \text{ for all } \ell \in s\}$$` 
+  
+  (if `\(k = 0\)`, `\(A_n(k, \alpha) = \emptyset\)`)
+
+--
+
+6. Final set of selected variables: `\(S_n^+(k, \alpha) = S_n(\alpha) \cup A_n(k, \alpha)\)`
+
+---
+
+## Flexible variable selection
+
+The .blue1[augmentation set] allows for error control using a tuning parameter `\(k\)`
+
+--
+
+Define `\(V_n(\alpha) = \text{number of type I errors at level }\alpha\)`, `\(R_n(\alpha) = \lvert S_n(\alpha) \rvert\)`
+
+Examples of more general error rates: 
+
+--
+
+generalized FWER: `\(gFWER(k) = Pr_{P_0}(V_n(\alpha) &gt; k + 1), k \in \{0, \ldots, p - R_n(\alpha)\}\)`
+
+--
+
+proportion of false positives among the rejected variables at level `\(q \in (0, 1)\)`: `$$PFP(q) = Pr_{P_0}(V_n(\alpha)/R_n(\alpha) &gt; q)$$`
+
+--
+
+false discovery rate: `\(FDR = E_{P_0}\{V_n(\alpha)/R_n(\alpha)\}\)`
+
+--
+
+`\(k\)` can be determined to control one of these error rates! 
+
+And the resulting procedure is .blue1[persistant]
+
+.small[ [Details in Williamson and Huang (2022)] ]
+
+---
+
+## Flexible variable selection
+
+How can we select variables based on `\(\psi_{0,j}\)` with missing data? 
+
+--
+
+1. Multiply impute the data
+
+--
+
+2. Estimate `\(\psi_0\)` on each imputed dataset
+
+--
+
+3. Use Rubin's rules to combine estimates, standard errors; use these to obtain p-values
+
+--
+
+4. Proceed as with complete data
+
+---
+
+## Numerical results
+
+Selection procedures:
+* lasso (also with stability selection .small[ [Meinshausen and Buhlmann (2010)] ] and knockoffs .small[ [Barber and Candes (2015)] ])
+
+--
+
+* intrinsic selection
+
+--
+
+* extrinsic selection (based on Super Learner; also with stability selection)
+
+--
+
+Two settings: (binary outcome, continuous features, varying missing data)
+* linear outcome-feature relationship (setting A)
+  * 6 important features (some very important, some weakly important)
+  * `\(p \in \{30, 500\}\)`
+
+--
+
+* nonlinear outcome-feature relationship, correlated features (setting B)
+  * 3 important features (all equally weakly important)
+  * `\(p = 6\)`
+  
+---
+
+## Numerical results: setting A
+
+&lt;img src="img/binomial-probit-linear-normal-nested_select-perf.png" width="140%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Numerical results: setting B
+
+&lt;img src="img/nonlinear-normal-correlated_select-perf.png" width="140%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Classifying pancreatic cysts
+
+Cross-validated AUC of each procedure for selecting sets:
+&lt;img src="img/data-analysis_mucinous_alg_1_covariates_0_biomarkers_1.png" width="140%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Current and future directions
+
+Several extensions:
+* .green[Longitudinal] variable importance
+* A measure for .blue1[tailoring variables]
+* .blue2[Fairness-aware] variable importance
+
+&lt;img src="img/people3.PNG" width="55%" style="display: block; margin: auto;" /&gt;
+---
+
+
+## Closing thoughts
+
+.blue1[Population-based] variable importance:
+* wide variety of meaningful measures
+* simple estimators
+* machine learning okay
+* valid inference, testing
+* can be used for variable selection
+  * offers protection against model misspecification
+  * missing data handled naturally
+
+Check out the software:
+
+* R packages [`vimp`](https://github.com/bdwilliamson/vimp) (importance) and [`flevr`](https://github.com/bdwilliamson/flevr) (selection)
+* Python package [`vimpy`](https://github.com/bdwilliamson/vimpy)
+
+&lt;svg viewBox="0 0 496 512" style="height:1em;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"&gt;&lt;/path&gt;&lt;/svg&gt; https://github.com/bdwilliamson | &lt;svg viewBox="0 0 496 512" style="height:1em;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M336.5 160C322 70.7 287.8 8 248 8s-74 62.7-88.5 152h177zM152 256c0 22.2 1.2 43.5 3.3 64h185.3c2.1-20.5 3.3-41.8 3.3-64s-1.2-43.5-3.3-64H155.3c-2.1 20.5-3.3 41.8-3.3 64zm324.7-96c-28.6-67.9-86.5-120.4-158-141.6 24.4 33.8 41.2 84.7 50 141.6h108zM177.2 18.4C105.8 39.6 47.8 92.1 19.3 160h108c8.7-56.9 25.5-107.8 49.9-141.6zM487.4 192H372.7c2.1 21 3.3 42.5 3.3 64s-1.2 43-3.3 64h114.6c5.5-20.5 8.6-41.8 8.6-64s-3.1-43.5-8.5-64zM120 256c0-21.5 1.2-43 3.3-64H8.6C3.2 212.5 0 233.8 0 256s3.2 43.5 8.6 64h114.6c-2-21-3.2-42.5-3.2-64zm39.5 96c14.5 89.3 48.7 152 88.5 152s74-62.7 88.5-152h-177zm159.3 141.6c71.4-21.2 129.4-73.7 158-141.6h-108c-8.8 56.9-25.6 107.8-50 141.6zM19.3 352c28.6 67.9 86.5 120.4 158 141.6-24.4-33.8-41.2-84.7-50-141.6h-108z"&gt;&lt;/path&gt;&lt;/svg&gt; https://bdwilliamson.github.io
+
+---
+
+## References
+
+* .small[ Barber RF and Candes EJ. 2015. Controlling the false discovery rate via knockoffs. _Annals of Statistics_.]
+* .small[ Breiman L. 2001. Random forests. _Machine Learning_.]
+* .small[ Breiman L. 2001. Statistical modeling: the two cultures. _Statistical Science_.]
+* .small[ Chernozhukov V et al. 2018. Double/debiased machine learning for treatment and structural parameters. _The Econometrics Journal_.]
+* .small[ Magaret CA, Benkeser DC, Williamson BD, et al. 2019. Prediction of VRC01 neutralization sensitivity by HIV-1 gp160 sequence features. _PLoS Computational Biology_. ]
+* .small[ Meinshausen N and Buhlmann P. 2010. Stability selection. _Journal of the Royal Statistical Society: Series B (Methodological)_. ]
+* .small[ Tibshirani R. 1996. Regression shrinkage and selection via the lasso. _Journal of the Royal Statistical Society: Series B (Methodological)_. ]
+* .small[ van der Laan MJ. 2006. Statistical inference for variable importance. _The International Journal of Biostatistics_.]
+
+---
+
+## References
+
+* .small[ van der Laan MJ, Polley EC, and Hubbard AE. 2007. Super Learner. _Statistical Applications in Genetics and Molecular Biology_. ]
+* .small[ van der Laan MJ and Rose S. 2011. Targeted learning: causal inference for observational and experimental data. _Springer_.]
+* .small[ Williamson BD, Magaret CA, Gilbert PB, Nizam S, Simmons C, and Benkeser DC. 2021a. Super LeArner Prediction of NAb Panels (SLAPNAP): a containerized tool for predicting combination monoclonal broadly neutralizing antibody sensitivity. _Bioinformatics_.]
+* .small[ Williamson BD, Gilbert P, Carone M, and Simon N. 2020. Nonparametric variable importance assessment using machine learning techniques (+ rejoinder to discussion). _Biometrics_. ]
+* .small[ Williamson BD, Gilbert P, Simon N, and Carone M. 2021b. A general framework for inference on algorithm-agnostic variable importance. _Journal of the American Statistical Association_. ]
+* .small[ Williamson BD and Feng J. 2020. Efficient nonparametric statistical inference on population feature importance using Shapley values. _ICML_. ]
+* .small[ Williamson BD and Huang Y. 2022. Flexible variable selection in the presence of missing data. _arXiv_.]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "tomorrow-night-blue",
+"highlightLanguage": "rmarkdown",
+"highlightLines": false,
+"slideNumberFormat": "%current%",
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
