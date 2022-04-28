@@ -18,6 +18,7 @@ output:
 library("xaringanthemer")
 
 extra_css <- list(
+  ".tiny" = list(`font-size` = "60%"),
   ".small" =  list(`font-size` = "80%"),
   ".large" =  list(`font-size` = "150%"),
   ".huge" =  list(`font-size` = "300%"),
@@ -68,6 +69,33 @@ knitr::include_graphics(c(
 
 ---
 
+## Motivation
+
+.pull-left[
+<img src = "img/walls-etal_spike.jpg" width=300 height=300>
+
+.small[ [Walls et al., 2020] ]
+]
+
+.pull-right[
+<img src = "img/gilbert-etal_cor.jpg" width=400 height=300>
+
+.small[ [Gilbert et al., 2021] ]
+]
+
+---
+
+## Motivation
+
+```{r edrn, echo = FALSE, fig.show = "hold", out.width = "70%", fig.align = "center"}
+knitr::include_graphics(c(
+    "img/liu-etal_edrn.jpeg"
+  ))
+```
+.small[ [Liu et al., 2020] ]
+
+---
+
 ## Variable importance: what and why
 
 **What is variable importance?**
@@ -76,33 +104,19 @@ knitr::include_graphics(c(
 
 * .blue1[Quantification of "contributions" of a variable] (or a set of variables)
 
---
-
   Traditionally: contribution to .blue2[predictions]
 --
 
 * Useful to distinguish between contributions of predictions...
---
 
   * (.blue1[extrinsic importance]) ... .blue1[by a given (possibly black-box) algorithm]
   .small[ [e.g., Breiman, (2001)] ]
---
 
   * (.blue1[intrinsic importance]) ... .blue1[by best possible (i.e., oracle) algorithm]
   .small[ [e.g., van der Laan (2006)] ]
 --
 
 * Our work focuses on .blue1[interpretable, model-agnostic intrinsic importance]
-
---
-
-Example uses of .blue2[intrinsic] variable importance:
-* is it worth extracting text from notes in the EHR for the sake of predicting hospital readmission?
-
---
-
-* is it worth collecting a given covariate for the sake of predicting neutralization sensitivity?
-
 
 ---
 
@@ -315,8 +329,7 @@ How should we make inference on $\psi_{0,s}$?
 --
  Why?
 
-We can write $V(f_n, P_n) - V(f_{n,s}, P_n) \approx \color{green}{V(f_0, P_n) - V(f_0, P_0)} + \color{blue}{V(f_n, P_0) - V(f_0, P_0)}$
---
+We can write $V(f_n, P_n) - V(f_{0}, P_0) \approx \color{green}{V(f_0, P_n) - V(f_0, P_0)} + \color{blue}{V(f_n, P_0) - V(f_0, P_0)}$
 
 * the $\color{green}{\text{green term}}$ can be studied using the functional delta method
 * the $\color{blue}{\text{blue term}}$ is second-order because $f_0$ maximizes $V$ over $\mathcal{F}$
@@ -396,7 +409,7 @@ Estimation procedure: based on .blue1[sampling a fraction] $c$ of all possible s
 
 .green[Inference] can be carried out using influence functions, as before
 
-.small[ Details in Williamson and Feng (2020) ]
+.small[ [Details in Williamson and Feng (2020)] ]
 
 ---
 
@@ -488,29 +501,21 @@ $$A_n(k, \alpha) = \{s \subseteq S_n^c(\alpha): \tilde{p}_{n,\ell} \leq \tilde{p
 
 ## Flexible variable selection
 
-The .blue1[augmentation set] allows for error control using a tuning parameter $k$
+The .blue1[augmentation set] allows for error control using a tuning parameter $k \in \{0, \ldots, p - \lvert S_n(\alpha)\rvert\}$
 
 --
-
-Define $V_n(\alpha) = \text{number of type I errors at level }\alpha$, $R_n(\alpha) = \lvert S_n(\alpha) \rvert$
 
 Examples of more general error rates: 
 
---
+* .blue2[generalized FWER]: probability of making more than $k + 1$ type I errors
 
-generalized FWER: $gFWER(k) = Pr_{P_0}(V_n(\alpha) > k + 1), k \in \{0, \ldots, p - R_n(\alpha)\}$
+* .blue2[proportion of false positives] among the rejected variables greater than $q(k) \in (0, 1)$
 
---
-
-proportion of false positives among the rejected variables at level $q \in (0, 1)$: $$PFP(q) = Pr_{P_0}(V_n(\alpha)/R_n(\alpha) > q)$$
+* .blue2[false discovery rate]
 
 --
 
-false discovery rate: $FDR = E_{P_0}\{V_n(\alpha)/R_n(\alpha)\}$
-
---
-
-$k$ can be determined to control one of these error rates! 
+$k$ can be determined to .blue1[control one of these error rates]! 
 
 And the resulting procedure is .blue1[persistant]
 
@@ -532,7 +537,7 @@ How can we select variables based on $\psi_{0,j}$ with missing data?
 
 --
 
-3. Use Rubin's rules to combine estimates, standard errors; use these to obtain p-values
+3. Use Rubin's rules: combine estimates, standard errors; obtain p-values
 
 --
 
@@ -543,57 +548,77 @@ How can we select variables based on $\psi_{0,j}$ with missing data?
 ## Numerical results
 
 Selection procedures:
-* lasso (also with stability selection .small[ [Meinshausen and Buhlmann (2010)] ] and knockoffs .small[ [Barber and Candes (2015)] ])
+* lasso 
+  * lasso + stability selection .small[ [Meinshausen and Buhlmann (2010)] ] 
+  * lasso + knockoffs .small[ [Barber and Candes (2015)] ]
 
 --
 
-* intrinsic selection
-
---
-
-* extrinsic selection (based on Super Learner; also with stability selection)
+* intrinsic selection (SPVIM with augmentation)
 
 --
 
 Two settings: (binary outcome, continuous features, varying missing data)
-* linear outcome-feature relationship (setting A)
+* linear outcome-feature relationship (setting 1)
   * 6 important features (some very important, some weakly important)
   * $p \in \{30, 500\}$
 
 --
 
-* nonlinear outcome-feature relationship, correlated features (setting B)
+* nonlinear outcome-feature relationship, correlated features (setting 1)
   * 3 important features (all equally weakly important)
   * $p = 6$
   
 ---
 
-## Numerical results: setting A
+## Numerical results: setting 1
 
-```{r results-a, echo = FALSE, fig.show = "hold", out.width = "140%", fig.align = "center"}
+```{r results-a-auc, echo = FALSE, fig.show = "hold", out.width = "140%", fig.align = "center"}
 knitr::include_graphics(c(
-    "img/binomial-probit-linear-normal-nested_select-perf.png"
+    "img/binomial-probit-linear-normal-nested_talks-auc.png"
   ))
 ```
 
 ---
 
-## Numerical results: setting B
+## Numerical results: setting 1
 
-```{r results-b, echo = FALSE, fig.show = "hold", out.width = "140%", fig.align = "center"}
+```{r results-a-sens-spec, echo = FALSE, fig.show = "hold", out.width = "140%", fig.align = "center"}
 knitr::include_graphics(c(
-    "img/nonlinear-normal-correlated_select-perf.png"
+    "img/binomial-probit-linear-normal-nested_talks-sens-spec.png"
   ))
 ```
 
 ---
+
+
+## Numerical results: setting 2
+
+```{r results-b-auc, echo = FALSE, fig.show = "hold", out.width = "140%", fig.align = "center"}
+knitr::include_graphics(c(
+    "img/nonlinear-normal-correlated_talks-auc.png"
+  ))
+```
+
+---
+
+## Numerical results: setting 2
+
+```{r results-b-sens-spec, echo = FALSE, fig.show = "hold", out.width = "140%", fig.align = "center"}
+knitr::include_graphics(c(
+    "img/nonlinear-normal-correlated_talks-sens-spec.png"
+  ))
+```
+
+---
+
 
 ## Classifying pancreatic cysts
 
 Cross-validated AUC of each procedure for selecting sets:
 ```{r data-results, echo = FALSE, fig.show = "hold", out.width = "140%", fig.align = "center"}
 knitr::include_graphics(c(
-    "img/data-analysis_mucinous_alg_1_covariates_0_biomarkers_1.png"
+    "img/data-analysis_v2.png"
   ))
 ```
 
@@ -628,7 +653,7 @@ knitr::include_graphics(c(
 Check out the software:
 
 * R packages [`vimp`](https://github.com/bdwilliamson/vimp) (importance) and [`flevr`](https://github.com/bdwilliamson/flevr) (selection)
-* Python package [`vimpy`](https://github.com/bdwilliamson/vimpy)
+* Python package [`vimpy`](https://github.com/bdwilliamson/vimpy) (importance)
 
 `r icons::fontawesome('github')` https://github.com/bdwilliamson | `r icons::fontawesome('globe')` https://bdwilliamson.github.io
 
@@ -638,8 +663,8 @@ Check out the software:
 
 * .small[ Barber RF and Candes EJ. 2015. Controlling the false discovery rate via knockoffs. _Annals of Statistics_.]
 * .small[ Breiman L. 2001. Random forests. _Machine Learning_.]
-* .small[ Breiman L. 2001. Statistical modeling: the two cultures. _Statistical Science_.]
-* .small[ Chernozhukov V et al. 2018. Double/debiased machine learning for treatment and structural parameters. _The Econometrics Journal_.]
+* .small[ Gilbert PB et al. 2021. Immune correlates analysis of the mRNA-1273 COVID-19 vaccine efficacy clinical trial. _Science_.]
+* .small[Liu Y et al. 2020. Biomarkers and strategy to detect preinvasive and early pancreatic cancer: state of the field and the impact of the EDRN. _Cancer Epidemiology, Biomarkers & Prevention_.]
 * .small[ Magaret CA, Benkeser DC, Williamson BD, et al. 2019. Prediction of VRC01 neutralization sensitivity by HIV-1 gp160 sequence features. _PLoS Computational Biology_. ]
 * .small[ Meinshausen N and Buhlmann P. 2010. Stability selection. _Journal of the Royal Statistical Society: Series B (Methodological)_. ]
 * .small[ Tibshirani R. 1996. Regression shrinkage and selection via the lasso. _Journal of the Royal Statistical Society: Series B (Methodological)_. ]
@@ -650,7 +675,7 @@ Check out the software:
 ## References
 
 * .small[ van der Laan MJ, Polley EC, and Hubbard AE. 2007. Super Learner. _Statistical Applications in Genetics and Molecular Biology_. ]
-* .small[ van der Laan MJ and Rose S. 2011. Targeted learning: causal inference for observational and experimental data. _Springer_.]
+.small[ Walls AC et al. 2020. Structure, function, and antigenicity of the SARS-CoV-2 Spike glycoprotein. _Cell_.]
 * .small[ Williamson BD, Magaret CA, Gilbert PB, Nizam S, Simmons C, and Benkeser DC. 2021a. Super LeArner Prediction of NAb Panels (SLAPNAP): a containerized tool for predicting combination monoclonal broadly neutralizing antibody sensitivity. _Bioinformatics_.]
 * .small[ Williamson BD, Gilbert P, Carone M, and Simon N. 2020. Nonparametric variable importance assessment using machine learning techniques (+ rejoinder to discussion). _Biometrics_. ]
 * .small[ Williamson BD, Gilbert P, Simon N, and Carone M. 2021b. A general framework for inference on algorithm-agnostic variable importance. _Journal of the American Statistical Association_. ]

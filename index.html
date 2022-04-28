@@ -36,6 +36,29 @@ The work I will present today was done in collaboration with:
 
 ---
 
+## Motivation
+
+.pull-left[
+&lt;img src = "img/walls-etal_spike.jpg" width=300 height=300&gt;
+
+.small[ [Walls et al., 2020] ]
+]
+
+.pull-right[
+&lt;img src = "img/gilbert-etal_cor.jpg" width=400 height=300&gt;
+
+.small[ [Gilbert et al., 2021] ]
+]
+
+---
+
+## Motivation
+
+&lt;img src="img/liu-etal_edrn.jpeg" width="70%" style="display: block; margin: auto;" /&gt;
+.small[ [Liu et al., 2020] ]
+
+---
+
 ## Variable importance: what and why
 
 **What is variable importance?**
@@ -44,33 +67,19 @@ The work I will present today was done in collaboration with:
 
 * .blue1[Quantification of "contributions" of a variable] (or a set of variables)
 
---
-
   Traditionally: contribution to .blue2[predictions]
 --
 
 * Useful to distinguish between contributions of predictions...
---
 
   * (.blue1[extrinsic importance]) ... .blue1[by a given (possibly black-box) algorithm]
   .small[ [e.g., Breiman, (2001)] ]
---
 
   * (.blue1[intrinsic importance]) ... .blue1[by best possible (i.e., oracle) algorithm]
   .small[ [e.g., van der Laan (2006)] ]
 --
 
 * Our work focuses on .blue1[interpretable, model-agnostic intrinsic importance]
-
---
-
-Example uses of .blue2[intrinsic] variable importance:
-* is it worth extracting text from notes in the EHR for the sake of predicting hospital readmission?
-
---
-
-* is it worth collecting a given covariate for the sake of predicting neutralization sensitivity?
-
 
 ---
 
@@ -279,8 +288,7 @@ How should we make inference on `\(\psi_{0,s}\)`?
 --
  Why?
 
-We can write `\(V(f_n, P_n) - V(f_{n,s}, P_n) \approx \color{green}{V(f_0, P_n) - V(f_0, P_0)} + \color{blue}{V(f_n, P_0) - V(f_0, P_0)}\)`
---
+We can write `\(V(f_n, P_n) - V(f_{0}, P_0) \approx \color{green}{V(f_0, P_n) - V(f_0, P_0)} + \color{blue}{V(f_n, P_0) - V(f_0, P_0)}\)`
 
 * the `\(\color{green}{\text{green term}}\)` can be studied using the functional delta method
 * the `\(\color{blue}{\text{blue term}}\)` is second-order because `\(f_0\)` maximizes `\(V\)` over `\(\mathcal{F}\)`
@@ -358,7 +366,7 @@ Estimation procedure: based on .blue1[sampling a fraction] `\(c\)` of all possib
 
 .green[Inference] can be carried out using influence functions, as before
 
-.small[ Details in Williamson and Feng (2020) ]
+.small[ [Details in Williamson and Feng (2020)] ]
 
 ---
 
@@ -450,29 +458,21 @@ How can we select variables based on `\(\psi_{0,j}\)`?
 
 ## Flexible variable selection
 
-The .blue1[augmentation set] allows for error control using a tuning parameter `\(k\)`
+The .blue1[augmentation set] allows for error control using a tuning parameter `\(k \in \{0, \ldots, p - \lvert S_n(\alpha)\rvert\}\)`
 
 --
-
-Define `\(V_n(\alpha) = \text{number of type I errors at level }\alpha\)`, `\(R_n(\alpha) = \lvert S_n(\alpha) \rvert\)`
 
 Examples of more general error rates: 
 
---
+* .blue2[generalized FWER]: probability of making more than `\(k + 1\)` type I errors
 
-generalized FWER: `\(gFWER(k) = Pr_{P_0}(V_n(\alpha) &gt; k + 1), k \in \{0, \ldots, p - R_n(\alpha)\}\)`
+* .blue2[proportion of false positives] among the rejected variables greater than `\(q(k) \in (0, 1)\)`
 
---
-
-proportion of false positives among the rejected variables at level `\(q \in (0, 1)\)`: `$$PFP(q) = Pr_{P_0}(V_n(\alpha)/R_n(\alpha) &gt; q)$$`
+* .blue2[false discovery rate]
 
 --
 
-false discovery rate: `\(FDR = E_{P_0}\{V_n(\alpha)/R_n(\alpha)\}\)`
-
---
-
-`\(k\)` can be determined to control one of these error rates! 
+`\(k\)` can be determined to .blue1[control one of these error rates]! 
 
 And the resulting procedure is .blue1[persistant]
 
@@ -494,7 +494,7 @@ How can we select variables based on `\(\psi_{0,j}\)` with missing data?
 
 --
 
-3. Use Rubin's rules to combine estimates, standard errors; use these to obtain p-values
+3. Use Rubin's rules: combine estimates, standard errors; obtain p-values
 
 --
 
@@ -505,47 +505,59 @@ How can we select variables based on `\(\psi_{0,j}\)` with missing data?
 ## Numerical results
 
 Selection procedures:
-* lasso (also with stability selection .small[ [Meinshausen and Buhlmann (2010)] ] and knockoffs .small[ [Barber and Candes (2015)] ])
+* lasso 
+  * lasso + stability selection .small[ [Meinshausen and Buhlmann (2010)] ] 
+  * lasso + knockoffs .small[ [Barber and Candes (2015)] ]
 
 --
 
-* intrinsic selection
-
---
-
-* extrinsic selection (based on Super Learner; also with stability selection)
+* intrinsic selection (SPVIM with augmentation)
 
 --
 
 Two settings: (binary outcome, continuous features, varying missing data)
-* linear outcome-feature relationship (setting A)
+* linear outcome-feature relationship (setting 1)
   * 6 important features (some very important, some weakly important)
   * `\(p \in \{30, 500\}\)`
 
 --
 
-* nonlinear outcome-feature relationship, correlated features (setting B)
+* nonlinear outcome-feature relationship, correlated features (setting 1)
   * 3 important features (all equally weakly important)
   * `\(p = 6\)`
   
 ---
 
-## Numerical results: setting A
+## Numerical results: setting 1
 
-&lt;img src="img/binomial-probit-linear-normal-nested_select-perf.png" width="140%" style="display: block; margin: auto;" /&gt;
+&lt;img src="img/binomial-probit-linear-normal-nested_talks-auc.png" width="140%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Numerical results: setting 1
+
+&lt;img src="img/binomial-probit-linear-normal-nested_talks-sens-spec.png" width="140%" style="display: block; margin: auto;" /&gt;
 
 ---
 
-## Numerical results: setting B
 
-&lt;img src="img/nonlinear-normal-correlated_select-perf.png" width="140%" style="display: block; margin: auto;" /&gt;
+## Numerical results: setting 2
+
+&lt;img src="img/nonlinear-normal-correlated_talks-auc.png" width="140%" style="display: block; margin: auto;" /&gt;
 
 ---
+
+## Numerical results: setting 2
+
+&lt;img src="img/nonlinear-normal-correlated_talks-sens-spec.png" width="140%" style="display: block; margin: auto;" /&gt;
+
+---
+
 
 ## Classifying pancreatic cysts
 
 Cross-validated AUC of each procedure for selecting sets:
-&lt;img src="img/data-analysis_mucinous_alg_1_covariates_0_biomarkers_1.png" width="140%" style="display: block; margin: auto;" /&gt;
+&lt;img src="img/data-analysis_v2.png" width="140%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -574,7 +586,7 @@ Several extensions:
 Check out the software:
 
 * R packages [`vimp`](https://github.com/bdwilliamson/vimp) (importance) and [`flevr`](https://github.com/bdwilliamson/flevr) (selection)
-* Python package [`vimpy`](https://github.com/bdwilliamson/vimpy)
+* Python package [`vimpy`](https://github.com/bdwilliamson/vimpy) (importance)
 
 &lt;svg viewBox="0 0 496 512" style="height:1em;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"&gt;&lt;/path&gt;&lt;/svg&gt; https://github.com/bdwilliamson | &lt;svg viewBox="0 0 496 512" style="height:1em;position:relative;display:inline-block;top:.1em;" xmlns="http://www.w3.org/2000/svg"&gt;  &lt;path d="M336.5 160C322 70.7 287.8 8 248 8s-74 62.7-88.5 152h177zM152 256c0 22.2 1.2 43.5 3.3 64h185.3c2.1-20.5 3.3-41.8 3.3-64s-1.2-43.5-3.3-64H155.3c-2.1 20.5-3.3 41.8-3.3 64zm324.7-96c-28.6-67.9-86.5-120.4-158-141.6 24.4 33.8 41.2 84.7 50 141.6h108zM177.2 18.4C105.8 39.6 47.8 92.1 19.3 160h108c8.7-56.9 25.5-107.8 49.9-141.6zM487.4 192H372.7c2.1 21 3.3 42.5 3.3 64s-1.2 43-3.3 64h114.6c5.5-20.5 8.6-41.8 8.6-64s-3.1-43.5-8.5-64zM120 256c0-21.5 1.2-43 3.3-64H8.6C3.2 212.5 0 233.8 0 256s3.2 43.5 8.6 64h114.6c-2-21-3.2-42.5-3.2-64zm39.5 96c14.5 89.3 48.7 152 88.5 152s74-62.7 88.5-152h-177zm159.3 141.6c71.4-21.2 129.4-73.7 158-141.6h-108c-8.8 56.9-25.6 107.8-50 141.6zM19.3 352c28.6 67.9 86.5 120.4 158 141.6-24.4-33.8-41.2-84.7-50-141.6h-108z"&gt;&lt;/path&gt;&lt;/svg&gt; https://bdwilliamson.github.io
 
@@ -584,8 +596,8 @@ Check out the software:
 
 * .small[ Barber RF and Candes EJ. 2015. Controlling the false discovery rate via knockoffs. _Annals of Statistics_.]
 * .small[ Breiman L. 2001. Random forests. _Machine Learning_.]
-* .small[ Breiman L. 2001. Statistical modeling: the two cultures. _Statistical Science_.]
-* .small[ Chernozhukov V et al. 2018. Double/debiased machine learning for treatment and structural parameters. _The Econometrics Journal_.]
+* .small[ Gilbert PB et al. 2021. Immune correlates analysis of the mRNA-1273 COVID-19 vaccine efficacy clinical trial. _Science_.]
+* .small[Liu Y et al. 2020. Biomarkers and strategy to detect preinvasive and early pancreatic cancer: state of the field and the impact of the EDRN. _Cancer Epidemiology, Biomarkers &amp; Prevention_.]
 * .small[ Magaret CA, Benkeser DC, Williamson BD, et al. 2019. Prediction of VRC01 neutralization sensitivity by HIV-1 gp160 sequence features. _PLoS Computational Biology_. ]
 * .small[ Meinshausen N and Buhlmann P. 2010. Stability selection. _Journal of the Royal Statistical Society: Series B (Methodological)_. ]
 * .small[ Tibshirani R. 1996. Regression shrinkage and selection via the lasso. _Journal of the Royal Statistical Society: Series B (Methodological)_. ]
@@ -596,7 +608,7 @@ Check out the software:
 ## References
 
 * .small[ van der Laan MJ, Polley EC, and Hubbard AE. 2007. Super Learner. _Statistical Applications in Genetics and Molecular Biology_. ]
-* .small[ van der Laan MJ and Rose S. 2011. Targeted learning: causal inference for observational and experimental data. _Springer_.]
+.small[ Walls AC et al. 2020. Structure, function, and antigenicity of the SARS-CoV-2 Spike glycoprotein. _Cell_.]
 * .small[ Williamson BD, Magaret CA, Gilbert PB, Nizam S, Simmons C, and Benkeser DC. 2021a. Super LeArner Prediction of NAb Panels (SLAPNAP): a containerized tool for predicting combination monoclonal broadly neutralizing antibody sensitivity. _Bioinformatics_.]
 * .small[ Williamson BD, Gilbert P, Carone M, and Simon N. 2020. Nonparametric variable importance assessment using machine learning techniques (+ rejoinder to discussion). _Biometrics_. ]
 * .small[ Williamson BD, Gilbert P, Simon N, and Carone M. 2021b. A general framework for inference on algorithm-agnostic variable importance. _Journal of the American Statistical Association_. ]
