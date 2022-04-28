@@ -573,7 +573,7 @@ Two settings: (binary outcome, continuous features, varying missing data)
 
 ## Numerical results: setting 1
 
-```{r results-a-auc, echo = FALSE, fig.show = "hold", out.width = "140%", fig.align = "center"}
+```{r results-a-auc, echo = FALSE, fig.show = "hold", out.width = "100%", fig.align = "center"}
 knitr::include_graphics(c(
     "img/binomial-probit-linear-normal-nested_talks-auc.png"
   ))
@@ -583,7 +583,7 @@ knitr::include_graphics(c(
 
 ## Numerical results: setting 1
 
-```{r results-a-sens-spec, echo = FALSE, fig.show = "hold", out.width = "140%", fig.align = "center"}
+```{r results-a-sens-spec, echo = FALSE, fig.show = "hold", out.width = "100%", fig.align = "center"}
 knitr::include_graphics(c(
     "img/binomial-probit-linear-normal-nested_talks-sens-spec.png"
   ))
@@ -594,7 +594,7 @@ knitr::include_graphics(c(
 
 ## Numerical results: setting 2
 
-```{r results-b-auc, echo = FALSE, fig.show = "hold", out.width = "140%", fig.align = "center"}
+```{r results-b-auc, echo = FALSE, fig.show = "hold", out.width = "100%", fig.align = "center"}
 knitr::include_graphics(c(
     "img/nonlinear-normal-correlated_talks-auc.png"
   ))
@@ -604,7 +604,7 @@ knitr::include_graphics(c(
 
 ## Numerical results: setting 2
 
-```{r results-b-sens-spec, echo = FALSE, fig.show = "hold", out.width = "140%", fig.align = "center"}
+```{r results-b-sens-spec, echo = FALSE, fig.show = "hold", out.width = "100%", fig.align = "center"}
 knitr::include_graphics(c(
     "img/nonlinear-normal-correlated_talks-sens-spec.png"
   ))
@@ -616,7 +616,7 @@ knitr::include_graphics(c(
 ## Classifying pancreatic cysts
 
 Cross-validated AUC of each procedure for selecting sets:
-```{r data-results, echo = FALSE, fig.show = "hold", out.width = "140%", fig.align = "center"}
+```{r data-results, echo = FALSE, fig.show = "hold", out.width = "100%", fig.align = "center"}
 knitr::include_graphics(c(
     "img/data-analysis_v2.png"
   ))
