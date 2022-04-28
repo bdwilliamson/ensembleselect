@@ -87,7 +87,7 @@ knitr::include_graphics(c(
 
 ## Motivation
 
-```{r edrn, echo = FALSE, fig.show = "hold", out.width = "70%", fig.align = "center"}
+```{r edrn, echo = FALSE, fig.show = "hold", out.width = "60%", fig.align = "center"}
 knitr::include_graphics(c(
     "img/liu-etal_edrn.jpeg"
   ))
@@ -261,7 +261,7 @@ knitr::include_graphics("img/amp.png")
 
 ## Preparing for AMP: R-squared
 
-```{r vrc01-r2, echo = FALSE, out.height="480px", fig.align="center"}
+```{r vrc01-r2, echo = FALSE, fig.width = 9 / 300, fig.height = 18 / 300, dpi = 300, out.height = "540px", fig.align="center"}
 knitr::include_graphics("img/vim_ic50.censored_pres_r2_conditional_simple.png")
 ```
 
@@ -344,7 +344,7 @@ In other words: $f_0$ and $f_{0,s}$ **can be treated as known** in studying beha
 
 ## Preparing for AMP: the full picture
 
-```{r vrc01-r2-acc-auc, echo = FALSE, out.height="480px", fig.align="center"}
+```{r vrc01-r2-acc-auc, echo = FALSE, fig.width = 9 / 300, fig.height = 18 / 300, dpi = 300, out.height = "540px", fig.align="center"}
 knitr::include_graphics("img/vim_ic50.censored_pres_r2_acc_auc_conditional_simple.png")
 ```
 
@@ -573,7 +573,7 @@ Two settings: (binary outcome, continuous features, varying missing data)
 
 ## Numerical results: setting 1
 
-```{r results-a-auc, echo = FALSE, fig.show = "hold", out.width = "100%", fig.align = "center"}
+```{r results-a-auc, echo = FALSE, fig.width = 10 / 300, fig.height = 4 / 300, dpi = 300, fig.show = "hold", fig.align = "center"}
 knitr::include_graphics(c(
     "img/binomial-probit-linear-normal-nested_talks-auc.png"
   ))
@@ -583,7 +583,7 @@ knitr::include_graphics(c(
 
 ## Numerical results: setting 1
 
-```{r results-a-sens-spec, echo = FALSE, fig.show = "hold", out.width = "100%", fig.align = "center"}
+```{r results-a-sens-spec, echo = FALSE, fig.show = "hold", fig.width = 10 / 300, fig.height = 4 / 300, dpi = 300,  fig.align = "center"}
 knitr::include_graphics(c(
     "img/binomial-probit-linear-normal-nested_talks-sens-spec.png"
   ))
@@ -594,7 +594,7 @@ knitr::include_graphics(c(
 
 ## Numerical results: setting 2
 
-```{r results-b-auc, echo = FALSE, fig.show = "hold", out.width = "100%", fig.align = "center"}
+```{r results-b-auc, echo = FALSE, fig.show = "hold", fig.width = 10 / 300, fig.height = 4 / 300, dpi = 300,  fig.align = "center"}
 knitr::include_graphics(c(
     "img/nonlinear-normal-correlated_talks-auc.png"
   ))
@@ -604,7 +604,7 @@ knitr::include_graphics(c(
 
 ## Numerical results: setting 2
 
-```{r results-b-sens-spec, echo = FALSE, fig.show = "hold", out.width = "100%", fig.align = "center"}
+```{r results-b-sens-spec, echo = FALSE, fig.show = "hold", fig.width = 10 / 300, fig.height = 4 / 300, dpi = 300,  fig.align = "center"}
 knitr::include_graphics(c(
     "img/nonlinear-normal-correlated_talks-sens-spec.png"
   ))
@@ -616,7 +616,7 @@ knitr::include_graphics(c(
 ## Classifying pancreatic cysts
 
 Cross-validated AUC of each procedure for selecting sets:
-```{r data-results, echo = FALSE, fig.show = "hold", out.width = "100%", fig.align = "center"}
+```{r data-results, echo = FALSE, fig.show = "hold", fig.width = 10 / 300, fig.height = 5 / 300, dpi = 300,  fig.align = "center"}
 knitr::include_graphics(c(
     "img/data-analysis_v2.png"
   ))
@@ -631,7 +631,7 @@ Several extensions:
 * A measure for .blue1[tailoring variables]
 * .blue2[Fairness-aware] variable importance
 
-```{r acknowledgments-3, echo = FALSE, fig.show = "hold", out.width = "55%", fig.align = "center"}
+```{r acknowledgments-3, echo = FALSE, fig.show = "hold", out.width = "60%", fig.align = "center"}
 knitr::include_graphics(c(
     "img/people3.png"
   ))
