@@ -565,7 +565,7 @@ Two settings: (binary outcome, continuous features, varying missing data)
 
 --
 
-* nonlinear outcome-feature relationship, correlated features (setting 1)
+* nonlinear outcome-feature relationship, correlated features (setting 2)
   * 3 important features (all equally weakly important)
   * $p = 6$
   
