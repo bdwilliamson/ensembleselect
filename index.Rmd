@@ -261,7 +261,7 @@ knitr::include_graphics("img/amp.png")
 
 ## Preparing for AMP: R-squared
 
-```{r vrc01-r2, echo = FALSE, fig.width = 9 / 300, fig.height = 18 / 300, dpi = 300, out.height = "540px", fig.align="center"}
+```{r vrc01-r2, echo = FALSE, fig.width = 9 / 300, fig.height = 18 / 300, dpi = 300, out.height = "520px", fig.align="center"}
 knitr::include_graphics("img/vim_ic50.censored_pres_r2_conditional_simple.png")
 ```
 
@@ -344,7 +344,7 @@ In other words: $f_0$ and $f_{0,s}$ **can be treated as known** in studying beha
 
 ## Preparing for AMP: the full picture
 
-```{r vrc01-r2-acc-auc, echo = FALSE, fig.width = 9 / 300, fig.height = 18 / 300, dpi = 300, out.height = "540px", fig.align="center"}
+```{r vrc01-r2-acc-auc, echo = FALSE, fig.width = 9 / 300, fig.height = 18 / 300, dpi = 300, out.height = "520px", fig.align="center"}
 knitr::include_graphics("img/vim_ic50.censored_pres_r2_acc_auc_conditional_simple.png")
 ```
 
