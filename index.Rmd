@@ -633,7 +633,7 @@ Several extensions:
 
 ```{r acknowledgments-3, echo = FALSE, fig.show = "hold", out.width = "55%", fig.align = "center"}
 knitr::include_graphics(c(
-    "img/people3.PNG"
+    "img/people3.png"
   ))
 ```
 ---
